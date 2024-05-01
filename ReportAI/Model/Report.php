@@ -50,6 +50,13 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             || str_contains(strtolower($sql_query), 'update')
             || str_contains(strtolower($sql_query), 'delete')
             || str_contains(strtolower($sql_query), 'drop')
+            || str_contains(strtolower($sql_query), 'grant')
+            || str_contains(strtolower($sql_query), 'revoke')
+            || str_contains(strtolower($sql_query), 'describe')
+            || str_contains(strtolower($sql_query), 'truncate')
+            || str_contains(strtolower($sql_query), 'rollback')
+            || str_contains(strtolower($sql_query), 'commit')
+            || str_contains(strtolower($sql_query), 'savepoint')
         ) {
             // TODO trigger alert
             $errorMessage = 'Invalid operation';
@@ -57,7 +64,14 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         }
 
         $connection = $this->dbConnection->getConnection();
-        $revisedQuery = $this->prependTablePrefixToQuery($sql_query, $this->getDatabaseTablePrefix());
+        $tablePrefix = $this->getDatabaseTablePrefix();
+
+        if (!$tablePrefix) {
+            $revisedQuery = $sql_query;
+        } else {
+            $revisedQuery = $this->prependTablePrefixToQuery($sql_query, $this->getDatabaseTablePrefix());
+        }
+        
         $result = $connection->fetchAll($revisedQuery); // Execute the SQL query and fetch all results
 
         $data = [
@@ -76,7 +90,7 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
 
     protected function getDatabaseTablePrefix()
     {
-        return $this->dbConnection->getTablePrefix();
+        return $this->dbConnection->getTablePrefix() ?? '';
     }
 
     protected function getUnPrefixedTablenames()
@@ -84,7 +98,7 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         $tablePrefix = $this->getDatabaseTablePrefix();
 
         return array_map(function ($tableName) use ($tablePrefix) {
-            if (strpos($tableName, $tablePrefix) === 0) {
+            if (strpos($tableName, $tablePrefix ?? '') === 0) {
                 return substr($tableName, 5);
             }
             return $tableName;
