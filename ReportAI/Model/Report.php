@@ -43,22 +43,37 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         // Retrieve the 'sql_query' parameter from the decoded data
         $sql_query = isset($requestData['sql_query']) ? $requestData['sql_query'] : null;
 
+        $commandList = [
+            'insert',
+            'update',
+            'delete',
+            'drop',
+            'grant',
+            'revoke',
+            'describe',
+            'truncate',
+            'rollback',
+            'commit',
+            'savepoint',
+        ];
+
+        $sql_query_check = strtolower($sql_query);
+        // $sql_query_check = preg_replace('/)(,\./', ' ', $sql_query_check);
+        $splitQuery = explode(' ', $sql_query_check);
+        // $splitQuery = array_map(function ($str) {return strtolower($str); }, $splitQuery);
+        
         if (
             !$sql_query 
             || !str_contains(strtolower($sql_query), 'select')
-            || str_contains(strtolower($sql_query), 'insert')
-            || str_contains(strtolower($sql_query), 'update')
-            || str_contains(strtolower($sql_query), 'delete')
-            || str_contains(strtolower($sql_query), 'drop')
-            || str_contains(strtolower($sql_query), 'grant')
-            || str_contains(strtolower($sql_query), 'revoke')
-            || str_contains(strtolower($sql_query), 'describe')
-            || str_contains(strtolower($sql_query), 'truncate')
-            || str_contains(strtolower($sql_query), 'rollback')
-            || str_contains(strtolower($sql_query), 'commit')
-            || str_contains(strtolower($sql_query), 'savepoint')
+            || count(array_intersect($commandList, $splitQuery)) > 0
         ) {
             // TODO trigger alert
+            // return [
+            //     ['sql_query' =>  $sql_query, 'commn' => $commandList, 'split' => $splitQuery,
+            //     'contains' => !str_contains(strtolower($sql_query), 'select'),
+            //     'inter' => count(array_intersect($commandList, $splitQuery)) > 0,
+            //     ]
+            // ];
             $errorMessage = 'Invalid operation';
             throw new Exception(__($errorMessage), 400);
         }
