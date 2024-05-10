@@ -41,6 +41,8 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         // Decode JSON data to associative array
         $requestData = json_decode($jsonData, true);
         // Retrieve the 'sql_query' parameter from the decoded data
+        // $sql_query = "SELECT name, SUM(quantity_ordered) AS total_quantity_sold FROM sales_order_item GROUP BY name ORDER BY total_quantity_sold DESC LIMIT 5";
+        // $sql_query = "SELECT name, SUM(qty_ordered) AS total_quantity_sold FROM sales_order_item GROUP BY name ORDER BY total_quantity_sold DESC LIMIT 5";
         $sql_query = isset($requestData['sql_query']) ? $requestData['sql_query'] : null;
 
         $commandList = [
@@ -57,9 +59,9 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             'savepoint',
         ];
 
-        $sql_query_check = strtolower($sql_query);
-        // $sql_query_check = preg_replace('/)(,\./', ' ', $sql_query_check);
-        $splitQuery = explode(' ', $sql_query_check);
+        $sql_query = strtolower($sql_query);
+        // $sql_query = preg_replace('/)(,\./', ' ', $sql_query);
+        $splitQuery = explode(' ', $sql_query);
         // $splitQuery = array_map(function ($str) {return strtolower($str); }, $splitQuery);
         
         if (
@@ -78,16 +80,29 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             throw new Exception(__($errorMessage), 400);
         }
 
-        $connection = $this->dbConnection->getConnection();
-        $tablePrefix = $this->getDatabaseTablePrefix();
+        try {
+            
+            $connection = $this->dbConnection->getConnection();
+            $tablePrefix = $this->getDatabaseTablePrefix();
 
-        if (!$tablePrefix) {
-            $revisedQuery = $sql_query;
-        } else {
-            $revisedQuery = $this->prependTablePrefixToQuery($sql_query, $this->getDatabaseTablePrefix());
-        }
+            if (!$tablePrefix) {
+                $revisedQuery = $sql_query;
+            } else {
+                $revisedQuery = $this->prependTablePrefixToQuery($sql_query, $this->getDatabaseTablePrefix());
+            }
+            
+            $result = $connection->fetchAll($revisedQuery); // Execute the SQL query and fetch all results
         
-        $result = $connection->fetchAll($revisedQuery); // Execute the SQL query and fetch all results
+        } catch (\Exception $e) {
+            // If an SQL error occurs, return the error message
+            throw new Exception(__($e->getMessage()), 400);
+            // return [
+            //     [
+            //         'message' => 'SQL error occurred',
+            //         'error' => $e->getMessage()
+            //     ]
+            // ];        
+        }
 
         $data = [
             'message' => 'Data returned',
