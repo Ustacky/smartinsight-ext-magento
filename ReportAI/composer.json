@@ -1,0 +1,27 @@
+{
+    "name": "smart-insight/report-ai",
+    "description": "SmartInsight Magento Plugin",
+    "keywords": [
+        "magento",
+        "magento2",
+        "ai",
+        "ai reporting",
+        "data anlytics"
+    ],
+    "type": "magento2-module",
+    "require": {
+        "php": "^7.3 || ^7.4 || ^8.0",
+        "magento/framework": "~102.0.0||~103.0.0"
+    },
+    "license": [
+        "proprietary"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "SmartInsight\\ReportAi\\": ""
+        }
+    }
+}
