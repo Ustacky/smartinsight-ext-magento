@@ -40,9 +40,6 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         $jsonData = $this->request->getContent();
         // Decode JSON data to associative array
         $requestData = json_decode($jsonData, true);
-        // Retrieve the 'sql_query' parameter from the decoded data
-        // $sql_query = "SELECT name, SUM(quantity_ordered) AS total_quantity_sold FROM sales_order_item GROUP BY name ORDER BY total_quantity_sold DESC LIMIT 5";
-        // $sql_query = "SELECT name, SUM(qty_ordered) AS total_quantity_sold FROM sales_order_item GROUP BY name ORDER BY total_quantity_sold DESC LIMIT 5";
         $sql_query = isset($requestData['sql_query']) ? $requestData['sql_query'] : null;
 
         $commandList = [
@@ -63,25 +60,18 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         // $sql_query = preg_replace('/)(,\./', ' ', $sql_query);
         $splitQuery = explode(' ', $sql_query);
         // $splitQuery = array_map(function ($str) {return strtolower($str); }, $splitQuery);
-        
+
         if (
-            !$sql_query 
+            !$sql_query
             || !str_contains(strtolower($sql_query), 'select')
             || count(array_intersect($commandList, $splitQuery)) > 0
         ) {
-            // TODO trigger alert
-            // return [
-            //     ['sql_query' =>  $sql_query, 'commn' => $commandList, 'split' => $splitQuery,
-            //     'contains' => !str_contains(strtolower($sql_query), 'select'),
-            //     'inter' => count(array_intersect($commandList, $splitQuery)) > 0,
-            //     ]
-            // ];
             $errorMessage = 'Invalid operation';
             throw new Exception(__($errorMessage), 400);
         }
 
         try {
-            
+
             $connection = $this->dbConnection->getConnection();
             $tablePrefix = $this->getDatabaseTablePrefix();
 
@@ -90,18 +80,12 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             } else {
                 $revisedQuery = $this->prependTablePrefixToQuery($sql_query, $this->getDatabaseTablePrefix());
             }
-            
+
             $result = $connection->fetchAll($revisedQuery); // Execute the SQL query and fetch all results
-        
+
         } catch (\Exception $e) {
             // If an SQL error occurs, return the error message
             throw new Exception(__($e->getMessage()), 400);
-            // return [
-            //     [
-            //         'message' => 'SQL error occurred',
-            //         'error' => $e->getMessage()
-            //     ]
-            // ];        
         }
 
         $data = [
@@ -109,13 +93,7 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             'data' => $result
         ];
 
-        // var_dump($data);
-
         return [$data];
-
-        // Convert the result to JSON format
-        // $response = json_encode($result);
-        // return $response;
     }
 
     protected function getDatabaseTablePrefix()
