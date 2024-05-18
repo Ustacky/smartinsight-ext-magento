@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/config.xsd">
+    <default>
+        <smartinsight>
+            <reportai>
+                <enabled>1</enabled>
+                <api_key>api_key</api_key>
+            </reportai>
+        </smartinsight>
+    </default>
+</config>

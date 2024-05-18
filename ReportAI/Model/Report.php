@@ -5,37 +5,52 @@ use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Webapi\Exception;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
+
 
 class Report implements \SmartInsight\ReportAI\Api\ReportInterface
 {
     protected $dbConnection;
     protected $request;
     protected $scopeConfig;
+    protected $encryptor;
 
     public function __construct(
         ResourceConnection $dbConnection,
         Http $request,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        EncryptorInterface $encryptor
     ) {
         $this->dbConnection = $dbConnection;
         $this->request = $request;
         $this->scopeConfig = $scopeConfig;
+        $this->encryptor = $encryptor;
     }
     /**
      * {@inheritdoc}
      */
     public function processInput()
     {
-        $rapidInsightHeader = $this->request->getHeader('RapidInsight-Token');
-
-        if (!$rapidInsightHeader) {
-            $errorMessage = 'Missing token: RapidInsight-Token';
-            throw new Exception(__($errorMessage), 400);
+        $isEnabled = $this->scopeConfig->getValue('smartinsight/reportai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        
+        if (!$isEnabled) {
+            throw new Exception(__('The module is disabled'), 555001);
         }
-
-        // TODO
-        // verify token
-        // $rapidInsightHeaderValue = $rapidInsightHeader->getFieldValue();
+        
+        $authHeader = $this->request->getHeader('X-SmartInsight-ReportAI-Api-Key');
+        
+        if (!$authHeader) {
+            $errorMessage = 'Missing API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            throw new Exception(__($errorMessage), 555101);
+        }
+        
+        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/reportai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $apiKey = $this->encryptor->decrypt($encryptedApiKey);
+        
+        if ($authHeader !== $apiKey) {
+            $errorMessage = 'Invalid API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            throw new Exception(__($errorMessage), 555101);
+        }
 
         $jsonData = $this->request->getContent();
         // Decode JSON data to associative array
@@ -57,8 +72,8 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
         ];
 
         $sql_query = strtolower($sql_query);
-        // $sql_query = preg_replace('/)(,\./', ' ', $sql_query);
         $splitQuery = explode(' ', $sql_query);
+        // $sql_query = preg_replace('/)(,\./', ' ', $sql_query);
         // $splitQuery = array_map(function ($str) {return strtolower($str); }, $splitQuery);
 
         if (
@@ -66,8 +81,8 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             || !str_contains(strtolower($sql_query), 'select')
             || count(array_intersect($commandList, $splitQuery)) > 0
         ) {
-            $errorMessage = 'Invalid operation';
-            throw new Exception(__($errorMessage), 400);
+            $errorMessage = 'Invalid operation '. $sql_query;
+            throw new Exception(__($errorMessage), 555201);
         }
 
         try {
@@ -84,8 +99,7 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
             $result = $connection->fetchAll($revisedQuery); // Execute the SQL query and fetch all results
 
         } catch (\Exception $e) {
-            // If an SQL error occurs, return the error message
-            throw new Exception(__($e->getMessage()), 400);
+            throw new Exception(__($e->getMessage()), 555999);
         }
 
         $data = [

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="smartinsight" translate="label" type="text" sortOrder="900" showInDefault="1"
+            showInWebsite="1" showInStore="1">
+            <label>SmartInsight Settings</label>
+            <tab>general</tab>
+            <resource>SmartInsight_ReportAI::config</resource>
+            <group id="reportai" translate="label" type="text" sortOrder="10" showInDefault="1"
+                showInWebsite="1" showInStore="1">
+                <label>Report AI Settings</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="api_key" translate="label" type="obscure" sortOrder="20" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>API Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

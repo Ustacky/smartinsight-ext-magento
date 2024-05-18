@@ -5,36 +5,50 @@ use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Webapi\Exception;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 
 class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
 {
     protected $dbConnection;
     protected $request;
     protected $scopeConfig;
+    protected $encryptor;
 
     public function __construct(
         ResourceConnection $dbConnection,
         Http $request,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        EncryptorInterface $encryptor
     ) {
         $this->dbConnection = $dbConnection;
         $this->request = $request;
         $this->scopeConfig = $scopeConfig;
+        $this->encryptor = $encryptor;
     }
 
     public function moduleSetup()
     {
-        $rapidInsightHeader = $this->request->getHeader('RapidInsight-Token');
+        $isEnabled = $this->scopeConfig->getValue('smartinsight/reportai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        
+        if (!$isEnabled) {
+            throw new Exception(__('The module is disabled'), 555001);
+        }
+        
+        $authHeader = $this->request->getHeader('X-SmartInsight-ReportAI-Api-Key');
+        
+        if (!$authHeader) {
+            $errorMessage = 'Missing API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            throw new Exception(__($errorMessage), 555101);
+        }
+        
+        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/reportai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $apiKey = $this->encryptor->decrypt($encryptedApiKey);
 
-        if (!$rapidInsightHeader) {
-            $errorMessage = 'Missing token: RapidInsight-Token';
-            throw new Exception(__($errorMessage), 400);
+        if ($authHeader !== $apiKey) {
+            $errorMessage = 'Invalid API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            throw new Exception(__($errorMessage), 555101);
         }
 
-        // TODO
-        // verify token
-        // $rapidInsightHeaderValue = $rapidInsightHeader->getFieldValue();
-        
         $data = [
             'sales_order_status' => [],
             'payment_methods' => [],
@@ -46,7 +60,7 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
             $data['payment_methods'] = $this->runSQLForPaymentMethods() ?? [];
 
         } catch (\Exception $e) {
-            throw new Exception(__($e->getMessage()), 400);  
+            throw new Exception(__($e->getMessage()), 555999);
         }
 
         return [$data];
