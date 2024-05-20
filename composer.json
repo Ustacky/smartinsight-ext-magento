@@ -1,6 +1,7 @@
 {
     "name": "smart-insight/report-ai",
     "description": "SmartInsight Magento Plugin",
+    "version": "1.0.1",
     "keywords": [
         "magento",
         "magento2",
