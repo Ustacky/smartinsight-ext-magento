@@ -1,5 +1,10 @@
 # SmartInsight ReportAI Extension
 
+### Magento Module
+```
+Vendor/Module -- SmartInsight/ReportAI
+```
+
 ### Register
 Visit [SmartInsight.AI](https://smartinsight.ai) and register your magento store
 
