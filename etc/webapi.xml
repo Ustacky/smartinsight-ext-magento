@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
     <route url="/V1/smartinsight/setup" method="POST">
-        <service class="SmartInsight\ReportAI\Api\SetupInterface" method="moduleSetup"/>
+        <service class="SmartInsight\SmartInsightAI\Api\SetupInterface" method="moduleSetup"/>
         <resources>
             <resource ref="anonymous"/>
         </resources>
     </route>
 
     <route url="/V1/smartinsight/run-query" method="POST">
-        <service class="SmartInsight\ReportAI\Api\ReportInterface" method="processInput"/>
+        <service class="SmartInsight\SmartInsightAI\Api\ReportInterface" method="processInput"/>
         <resources>
             <resource ref="anonymous"/>
         </resources>

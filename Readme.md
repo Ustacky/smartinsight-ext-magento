@@ -1,8 +1,8 @@
-# SmartInsight ReportAI Extension
+# SmartInsight AI Extension
 
 ### Magento Module
 ```
-Vendor/Module -- SmartInsight/ReportAI
+Vendor/Module -- SmartInsight/SmartInsightAI
 ```
 
 ### Register
@@ -11,7 +11,7 @@ Visit [SmartInsight.AI](https://smartinsight.ai) and register your magento store
 ### Package Installation
 
 ```
-composer require smartinsight/reportai
+composer require smartinsight/smart-insight-ai
 ```
 
 ### Pakage Setup

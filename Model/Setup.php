@@ -1,5 +1,5 @@
 <?php
-namespace SmartInsight\ReportAI\Model;
+namespace SmartInsight\SmartInsightAI\Model;
 
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResourceConnection;
@@ -7,7 +7,7 @@ use Magento\Framework\Webapi\Exception;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 
-class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
+class Setup implements \SmartInsight\SmartInsightAI\Api\SetupInterface
 {
     protected $dbConnection;
     protected $request;
@@ -28,24 +28,24 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
 
     public function moduleSetup()
     {
-        $isEnabled = $this->scopeConfig->getValue('smartinsight/reportai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $isEnabled = $this->scopeConfig->getValue('smartinsight/smartinsightai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
         if (!$isEnabled) {
             throw new Exception(__('The module is disabled'), 555001);
         }
 
-        $authHeader = $this->request->getHeader('X-SmartInsight-ReportAI-Api-Key');
+        $authHeader = $this->request->getHeader('X-SmartInsightAI-Api-Key');
 
         if (!$authHeader) {
-            $errorMessage = 'Missing API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            $errorMessage = 'Missing API_KEY: X-SmartInsightAI-Api-Key';
             throw new Exception(__($errorMessage), 555101);
         }
 
-        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/reportai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/smartinsightai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $apiKey = $this->encryptor->decrypt($encryptedApiKey);
 
         if ($authHeader !== $apiKey) {
-            $errorMessage = 'Invalid API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            $errorMessage = 'Invalid API_KEY: X-SmartInsightAI-Api-Key';
             throw new Exception(__($errorMessage), 555101);
         }
 

@@ -4,8 +4,8 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                <resource id="SmartInsight_ReportAI::config"
-                    title="SmartInsight ReportAI Configuration"
+                <resource id="SmartInsight_SmartInsightAI::config"
+                    title="SmartInsightAI Configuration"
                     sortOrder="10" />
             </resource>
         </resources>
