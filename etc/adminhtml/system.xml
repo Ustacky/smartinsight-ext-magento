@@ -6,10 +6,10 @@
             showInWebsite="1" showInStore="1">
             <label>SmartInsight Settings</label>
             <tab>general</tab>
-            <resource>SmartInsight_ReportAI::config</resource>
-            <group id="reportai" translate="label" type="text" sortOrder="10" showInDefault="1"
+            <resource>SmartInsight_SmartInsightAI::config</resource>
+            <group id="smartinsightai" translate="label" type="text" sortOrder="10" showInDefault="1"
                 showInWebsite="1" showInStore="1">
-                <label>Report AI Settings</label>
+                <label>SmartInsightAI Settings</label>
                 <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1"
                     showInWebsite="1" showInStore="1">
                     <label>Enabled</label>

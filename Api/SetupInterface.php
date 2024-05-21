@@ -1,6 +1,6 @@
 <?php
 
-namespace SmartInsight\ReportAI\Api;
+namespace SmartInsight\SmartInsightAI\Api;
 /**
      * Interface for accepting strings and returning JSON
      */

@@ -1,5 +1,5 @@
 <?php
-namespace SmartInsight\ReportAI\Model;
+namespace SmartInsight\SmartInsightAI\Model;
 
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResourceConnection;
@@ -8,7 +8,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 
 
-class Report implements \SmartInsight\ReportAI\Api\ReportInterface
+class Report implements \SmartInsight\SmartInsightAI\Api\ReportInterface
 {
     protected $dbConnection;
     protected $request;
@@ -31,24 +31,24 @@ class Report implements \SmartInsight\ReportAI\Api\ReportInterface
      */
     public function processInput()
     {
-        $isEnabled = $this->scopeConfig->getValue('smartinsight/reportai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $isEnabled = $this->scopeConfig->getValue('smartinsight/smartinsightai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         
         if (!$isEnabled) {
             throw new Exception(__('The module is disabled'), 555001);
         }
         
-        $authHeader = $this->request->getHeader('X-SmartInsight-ReportAI-Api-Key');
+        $authHeader = $this->request->getHeader('X-SmartInsightAI-Api-Key');
         
         if (!$authHeader) {
-            $errorMessage = 'Missing API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            $errorMessage = 'Missing API_KEY: X-SmartInsightAI-Api-Key';
             throw new Exception(__($errorMessage), 555101);
         }
         
-        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/reportai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/smartinsightai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $apiKey = $this->encryptor->decrypt($encryptedApiKey);
         
         if ($authHeader !== $apiKey) {
-            $errorMessage = 'Invalid API_KEY: X-SmartInsight-ReportAI-Api-Key';
+            $errorMessage = 'Invalid API_KEY: X-SmartInsightAI-Api-Key';
             throw new Exception(__($errorMessage), 555101);
         }
 

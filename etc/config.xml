@@ -3,10 +3,10 @@
     xsi:noNamespaceSchemaLocation="urn:magento:framework:Config/etc/config.xsd">
     <default>
         <smartinsight>
-            <reportai>
+            <smartinsightai>
                 <enabled>1</enabled>
                 <api_key>api_key</api_key>
-            </reportai>
+            </smartinsightai>
         </smartinsight>
     </default>
 </config>
