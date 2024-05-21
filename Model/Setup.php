@@ -29,18 +29,18 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
     public function moduleSetup()
     {
         $isEnabled = $this->scopeConfig->getValue('smartinsight/reportai/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-        
+
         if (!$isEnabled) {
             throw new Exception(__('The module is disabled'), 555001);
         }
-        
+
         $authHeader = $this->request->getHeader('X-SmartInsight-ReportAI-Api-Key');
-        
+
         if (!$authHeader) {
             $errorMessage = 'Missing API_KEY: X-SmartInsight-ReportAI-Api-Key';
             throw new Exception(__($errorMessage), 555101);
         }
-        
+
         $encryptedApiKey = $this->scopeConfig->getValue('smartinsight/reportai/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         $apiKey = $this->encryptor->decrypt($encryptedApiKey);
 
@@ -55,9 +55,8 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
         ];
 
         try {
-
-            $data['sales_order_status'] = $this->runSQLForSalesOrderStatus();
-            $data['payment_methods'] = $this->runSQLForPaymentMethods() ?? [];
+            $data['sales_order_status'] = $this->getSalesOrderStatus() ?? [];
+            $data['payment_methods'] = $this->getPaymentMethods() ?? [];
 
         } catch (\Exception $e) {
             throw new Exception(__($e->getMessage()), 555999);
@@ -71,7 +70,7 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
         return $this->dbConnection->getTablePrefix() ?? '';
     }
 
-    protected function getSQLForSalesOrderStatus()
+    protected function getSalesOrderStatus()
     {
         $tablePrefix = $this->getDatabaseTablePrefix();
         $tableName = "sales_order";
@@ -80,25 +79,19 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
             $tableName = $tablePrefix . $tableName;
         }
 
-        $query = "SELECT DISTINCT status from {$tableName} WHERE status IS NOT NULL AND status != ''";
-        return $query;
-    }
-
-    protected function runSQLForSalesOrderStatus()
-    {
-        $sql = $this->getSQLForSalesOrderStatus();
-
         $connection = $this->dbConnection->getConnection();
-        $salesOrderStatus = $connection->fetchAll($sql);
 
-        $result = array_map(function ($salesOrder) {
-            return $salesOrder['status'];
-        }, $salesOrderStatus);
+        $select = $connection->select()
+            ->distinct(true)
+            ->from($tableName, ['status'])
+            ->where('status IS NOT NULL')
+            ->where('status != ?', '');
 
-        return $result;
+        $results = $connection->fetchCol($select);
+        return $results;
     }
 
-    protected function getSQLForPaymentMethods()
+    protected function getPaymentMethods()
     {
         $tablePrefix = $this->getDatabaseTablePrefix();
         $tableName = "sales_order_payment";
@@ -107,21 +100,15 @@ class Setup implements \SmartInsight\ReportAI\Api\SetupInterface
             $tableName = $tablePrefix . $tableName;
         }
 
-        $query = "SELECT DISTINCT method FROM {$tableName} WHERE method IS NOT NULL AND method != ''";
-        return $query;
-    }
-
-    protected function runSQLForPaymentMethods()
-    {
-        $sql = $this->getSQLForPaymentMethods();
-
         $connection = $this->dbConnection->getConnection();
-        $paymentMethods = $connection->fetchAll($sql);
 
-        $result = array_map(function ($salesOrder) {
-            return $salesOrder['method'];
-        }, $paymentMethods);
+        $select = $connection->select()
+            ->distinct(true)
+            ->from($tableName, ['method'])
+            ->where('method IS NOT NULL')
+            ->where('method != ?', '');
 
-        return $result;
+        $results = $connection->fetchCol($select);
+        return $results;
     }
 }
