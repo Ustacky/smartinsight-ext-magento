@@ -52,11 +52,13 @@ class Setup implements \SmartInsight\SmartInsightAI\Api\SetupInterface
         $data = [
             'sales_order_status' => [],
             'payment_methods' => [],
+            'currency' => [],
         ];
 
         try {
             $data['sales_order_status'] = $this->getSalesOrderStatus() ?? [];
             $data['payment_methods'] = $this->getPaymentMethods() ?? [];
+            $data['currency'] = $this->getStoreCurrencyConfig() ?? [];
 
         } catch (\Exception $e) {
             throw new Exception(__($e->getMessage()), 555999);
@@ -107,6 +109,27 @@ class Setup implements \SmartInsight\SmartInsightAI\Api\SetupInterface
             ->from($tableName, ['method'])
             ->where('method IS NOT NULL')
             ->where('method != ?', '');
+
+        $results = $connection->fetchCol($select);
+        return $results;
+    }
+
+    protected function getStoreCurrencyConfig()
+    {
+        $tablePrefix = $this->getDatabaseTablePrefix();
+        $tableName = "core_config_data";
+
+        if ($tablePrefix) {
+            $tableName = $tablePrefix . $tableName;
+        }
+
+        $connection = $this->dbConnection->getConnection();
+
+        $select = $connection->select()
+            ->from($tableName, ['scope', 'path', 'value'])
+            ->where('path = ?', 'currency/options/default')
+            ->orWhere('path = ?', 'currency/options/base')
+            ->orWhere('path = ?', 'currency/options/allow');
 
         $results = $connection->fetchCol($select);
         return $results;
